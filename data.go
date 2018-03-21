@@ -10,8 +10,8 @@ var db *gorm.DB
 func DatabaseConnect(){
 	var err error
 	username := "MainA"
-	password := "Vera1225"
-	endpoint := "tcp(mydatabase.cmnihacpohfv.ap-southeast-2.rds.amazonaws.com)"
+	password := ""
+	endpoint := "tcp()"
 	dbname := "Trial1"
 	params := "charset=utf8&parseTime=True&loc=Local"
 
