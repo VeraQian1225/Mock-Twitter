@@ -27,9 +27,3 @@ func DatabaseConnect(){
 	db.AutoMigrate(&Post{})
 
 }
-
-//// Update - update product's price to 2000
-//db.Model(&User).Update("Price", 2000)
-//
-//// Delete - delete product
-//db.Delete(&User)
