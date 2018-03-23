@@ -3,16 +3,16 @@ package main
 import "github.com/jinzhu/gorm"
 
 type UserCredentials struct {
-	Email string `json:"email"`
-	Password string `json:"password"`
+	Email string 		`json:"email"`
+	Password string 	`json:"password"`
 }
 
 type Response struct {
-	Data string `json:"data"`
+	Data string 		`json:"data"`
 }
 
 type Token struct {
-	Token string `json:"token"`
+	Token string 		`json:"token"`
 }
 
 //User database
@@ -27,7 +27,7 @@ type User struct {
 type Post struct {
 	gorm.Model
 	Post      string	`json:"post"`
-	User      User `gorm:"foreignkey:UserRefer"` // use UserRefer as foreign key
+	User      User 		`gorm:"foreignkey:UserRefer"` // use UserRefer as foreign key
 	UserRefer string
 }
 
