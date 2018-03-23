@@ -36,9 +36,7 @@ func UserCreate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	OriginalJson, _:= ioutil.ReadAll(r.Body)
 	r.Body.Close()
 	js, err := simplejson.NewJson([]byte(OriginalJson))
-	if err != nil{
-		panic(err)
-	}
+	fatal(err)
 	name, _ := js.Get("Name").String()
 	email, _ := js.Get("Email").String()
 	password := js.Get("Password").MustString()
