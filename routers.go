@@ -13,6 +13,17 @@ type Route struct {
 
 type Routes []Route
 
+func AllRoutes() Routes {
+
+	routes := Routes{
+		Route{"PostShow", "GET", "/", PostShow},
+		Route{"UserCreate", "POST", "/create", UserCreate},
+		Route{"UserLogin", "POST", "/login", UserLogin},
+		Route{"UserPost", "POST", "/post", UserPost},
+	}
+	return routes
+}
+
 //Reads from the routes slice to translate the values to httprouter.Handle
 func NewRouter(routes Routes) *httprouter.Router {
 	router := httprouter.New()
@@ -25,18 +36,4 @@ func NewRouter(routes Routes) *httprouter.Router {
 		router.Handle(route.Method, route.Path, handle)
 	}
 	return router
-}
-
-// A map to store the Posts with the ID as the key acts as the storage in lieu of an actual database.
-var postDB = make(map[string]*Post)
-
-func AllRoutes() Routes {
-
-	routes := Routes{
-		Route{"PostShow", "GET", "/", PostShow},
-		Route{"UserCreate", "POST", "/create", UserCreate},
-		Route{"UserLogin", "POST", "/login", UserLogin},
-		Route{"UserPost", "POST", "/post", UserPost},
-	}
-	return routes
 }

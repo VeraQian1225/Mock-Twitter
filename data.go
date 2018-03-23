@@ -18,9 +18,7 @@ func DatabaseConnect(){
 	dataSource := username + ":" + password + "@" + endpoint + "/" + dbname + "?" + params
 
 	db, err = gorm.Open("mysql", dataSource)
-	if err != nil {
-		panic(err)
-	}
+	fatal(err)
 
 	//// Migrate the schema
 	db.AutoMigrate(&User{})

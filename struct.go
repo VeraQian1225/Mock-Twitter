@@ -15,7 +15,6 @@ type Token struct {
 	Token string `json:"token"`
 }
 
-
 //User database
 type User struct {
 	gorm.Model
