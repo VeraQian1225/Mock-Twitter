@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"fmt"
 	"time"
 	"strings"
@@ -8,13 +9,16 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/codegangsta/negroni"
 	"github.com/bitly/go-simplejson"
 	"github.com/julienschmidt/httprouter"
-	_"golang.org/x/crypto/bcrypt"
-	_"github.com/SermoDigital/jose/jws"
-	_"github.com/dgrijalva/jwt-go/request"
+	"github.com/dgrijalva/jwt-go/request"
 )
+
+
+// A map to store the Posts with the ID as the key acts as the storage in lieu of an actual database.
+var postDB = make(map[string]*Post)
+
+const SecretKey  = "Vera is testing Ya"
 
 func PostShow(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
 	fmt.Fprint(w, "Welcome to MockTwitter!\n")
@@ -38,11 +42,6 @@ func UserCreate(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	name, _ := js.Get("Name").String()
 	email, _ := js.Get("Email").String()
 	password := js.Get("Password").MustString()
-	//password, err := bcrypt.GenerateFromPassword([]byte(js.Get("Password").MustString()), bcrypt.DefaultCost)
-	//fmt.Println(name, email, password)
-	//if err != nil{
-	//	panic("Password encryption went wrong.")
-	//}
 	db.Create(&User{Name: name, Email: email, Password: string(password)})
 }
 
@@ -92,32 +91,35 @@ func UserLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
 	}
 
 	response := Token{tokenString}
-	Json_Response(response, w)
-
-	//OriginalJson, _:= ioutil.ReadAll(r.Body)
-	//r.Body.Close()
-	//js, err := simplejson.NewJson([]byte(OriginalJson))
-	//if err != nil{
-	//	panic(err)
-	//}
-	//Email, _ := js.Get("Email").String()
-	//Password :=js.Get("Password").MustString()
-
-	//err = bcrypt.CompareHashAndPassword([]byte(User.Password), []byte(Password))
-	//if err != nil {
-	//	fmt.Println("pw wrong")
-	//	panic(err)}
-
+	writeOKResponse(w, response)
 }
 
-func UserPost(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func UserPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprint(w, "UserPost!\n")
-	negroni.New(
-		negroni.HandlerFunc(ValidateTokenMiddleware),
-		negroni.Wrap(http.HandlerFunc(ProtectedHandler)),
-	)
-	//user := &User{}
-	//writeOKResponse(w, user)
+
+	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor,
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(SecretKey), nil
+		})
+	if err == nil {
+		if token.Valid {
+			response := Response{"Gained access to protected resource"}
+			OriginalJson, _:= ioutil.ReadAll(r.Body)
+			r.Body.Close()
+			js, err := simplejson.NewJson([]byte(OriginalJson))
+			fatal(err)
+			post, _ := js.Get("Post").String()
+			userid, _ := js.Get("User_refer").String()
+			db.Create(&Post{Post: post, UserRefer: userid})
+			writeOKResponse(w, response)
+		} else {
+			w.WriteHeader(http.StatusUnauthorized)
+			fmt.Fprint(w, "Token is not valid")
+		}
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, err)
+	}
 }
 
 // Writes the response as a standard JSON response with StatusOK
@@ -136,17 +138,8 @@ func writeErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
 	json.NewEncoder(w).Encode(&JsonErrorResponse{Error: &ApiError{Status: errorCode, Title: errorMsg}})
 }
 
-////Populates a model from the params in the Handler
-//func populateModelFromHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params, model interface{}) error {
-//	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
-//	if err != nil {
-//		return err
-//	}
-//	if err := r.Body.Close(); err != nil {
-//		return err
-//	}
-//	if err := json.Unmarshal(body, model); err != nil {
-//		return err
-//	}
-//	return nil
-//}
+func fatal(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
