@@ -31,7 +31,6 @@ type Post struct {
 	UserRefer string
 }
 
-//Post database
 type JsonResponse struct {
 	// Reserved field to add some meta information to the API response
 	Meta interface{} 	`json:"meta"`
